@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", Main)
 
 let rendertMethod = "none"
 
-const posts = [
+let posts = [
     {
         _id: '1',
         _userid: '1',
@@ -114,14 +114,22 @@ const posts = [
     }
 ]
 
-const users =  [{_id: "1", username: "moshe", password: "moshedat", fullname: "moshe perets", mail: "moshe@dat.com", createdAt: 1778841205000,
-                birthday: 1021669200000, profilePicURL: "../design/images/profile pictures/man_1.avif", userType: "feeder", feedingStations: [{_id: 1,status: "owner"}], posts: ["1","4","7","10"]},
-                {_id: "2", username: "rebecca", password: "beccabec", fullname: "rebecca black", mail: "reb@becca.com", createdAt: 1778841205000,
-                birthday: 1021669200000, profilePicURL: "../design/images/profile pictures/woman_1.avif", userType: "user", feedingStations: [], posts: ["2","5","8"]},
-                {_id: "3", username: "princess", password: "royalty", fullname: "princess dorothy", mail: "princess@cess.com", createdAt: 1778841205000,
-                birthday: 1021669200000, profilePicURL: "../design/images/profile pictures/woman_2.jpg", userType: "moderator", feedingStations: [], posts: ["3","6","9"]},
-                {_id: "4", username: "breado", password: "bread123", fullname: "breado bread", mail: "bread@b.com", createdAt: 1778841205000,
-                birthday: 1021669200000, profilePicURL: "../design/images/profile pictures/man_2.jpg", userType: "feeder", feedingStations: [{_id: 1,status: "owner"}], posts: []}]
+const users = [{
+    _id: "1", username: "moshe", password: "moshedat", fullname: "moshe perets", mail: "moshe@dat.com", createdAt: 1778841205000,
+    birthday: 1021669200000, profilePicURL: "../design/images/profile pictures/man_1.avif", userType: "feeder", feedingStations: [{ _id: 1, status: "owner" }], posts: ["1", "4", "7", "10"]
+},
+{
+    _id: "2", username: "rebecca", password: "beccabec", fullname: "rebecca black", mail: "reb@becca.com", createdAt: 1778841205000,
+    birthday: 1021669200000, profilePicURL: "../design/images/profile pictures/woman_1.avif", userType: "user", feedingStations: [], posts: ["2", "5", "8"]
+},
+{
+    _id: "3", username: "princess", password: "royalty", fullname: "princess dorothy", mail: "princess@cess.com", createdAt: 1778841205000,
+    birthday: 1021669200000, profilePicURL: "../design/images/profile pictures/woman_2.jpg", userType: "moderator", feedingStations: [], posts: ["3", "6", "9"]
+},
+{
+    _id: "4", username: "breado", password: "bread123", fullname: "breado bread", mail: "bread@b.com", createdAt: 1778841205000,
+    birthday: 1021669200000, profilePicURL: "../design/images/profile pictures/man_2.jpg", userType: "feeder", feedingStations: [{ _id: 1, status: "owner" }], posts: []
+}]
 
 let postsForRender = posts.filter(p => true)
 
@@ -142,7 +150,7 @@ function renderPosts(list = postsForRender) { // function that renders updates p
             const liked = isLiked(post._id, userId) // checks is each post is liked by the loggedin user
 
             const poster = users.find(user => user._id === post._userid)
-            console.log(poster)
+            // console.log(poster)
             return `
             <div class="post-box">
                 <div class="post-header">
@@ -257,7 +265,7 @@ function likePost(postId) { // likes or dislikes post if it's already liked or n
         return false;
     }
     const post = postsForRender.find(p => p._id === postId); // checks if an object in the array has ._id === postId and returns the first occurance
-                                                             // so it searchs for that post
+    // so it searchs for that post
     const liked = isLiked(postId, userId) // checks if it's liked
     if (liked) { // it's liked? remove the like
         post.likedByUsers = post.likedByUsers.filter(id => id !== userId); // removes the like by filtering that user' id out
@@ -269,24 +277,59 @@ function likePost(postId) { // likes or dislikes post if it's already liked or n
 
 function handleSortChange(selectedSort) {
     const url = new URL(window.location.href);
-    
+
     url.searchParams.set('sort', selectedSort);
-    
+
     window.history.pushState({}, '', url);
-    
+
 }
 
 function updateMainContent() {
     const urlParams = new URLSearchParams(window.location.search);
-    
+
     const currentSort = urlParams.get('sort') || "new";
 
     if (currentSort) {
         const sortRadio = document.getElementById(currentSort);
         if (sortRadio) {
-            sortRadio.checked = true; 
+            sortRadio.checked = true;
         }
     }
-    
+
     alterPosts(currentSort);
+}
+
+function createPost() {
+    const postTitle = document.getElementById("post-title-input")
+    const postDescription = document.getElementById("post-descrption-input")
+    const actualPostTitle = postTitle.value
+    const actualPostDescription = postDescription.value
+    if (actualPostTitle === "") {
+        console.log("you forgot title you stupid")
+        return
+    }
+    if (actualPostDescription === "") {
+        console.log("you forgot description you stupid")
+        return
+    }
+    console.log(`postTitle: ${actualPostTitle} | postDescription: ${actualPostDescription}`)
+    const newPost = {_id: generateId(), _userid:userId, title:actualPostTitle, description:actualPostDescription, 
+                     mediaType:"none", mediaUrl:"", likedByUsers:[], createdAt: Date.now()}
+    postTitle.value = ""
+    postDescription.value = ""
+    posts.push(newPost)
+    postsForRender = posts.filter(p => true)
+    renderPosts(postsForRender)
+}
+
+function generateId(length = 16) {
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    let result = ''
+
+    for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * chars.length)
+        result += chars[randomIndex]
+    }
+
+    return result
 }
