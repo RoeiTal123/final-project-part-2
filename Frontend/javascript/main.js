@@ -297,6 +297,10 @@ function updateMainContent() {
     }
 
     alterPosts(currentSort);
+
+    const user = users.find(user => user._id === userId)
+    const postCreator = document.getElementById("input-post-profile-picture")
+    postCreator.src = user.profilePicURL
 }
 
 function createPost() {

@@ -203,13 +203,30 @@
 
 .post-creation-box .post-header {
     display: flex;
-    justify-content: space-between;
-    padding: 16px;
+    /* justify-content: space-between; */
+    align-items: center;
     gap: 16px;
+    padding: 16px;
+}
+
+.input-post-title{
+    height: fit-content;
+    flex: 0.5;
+}
+
+.input-post-profile-picture{
+    height: 64px;
+    width: 64px;
+    border-radius: 50%;
 }
 
 .input-post-description{
     flex: 1;
+    margin: 16px;
+}
+
+.input-post-media{
+    margin: 16px;
 }
 
 .example-media{
@@ -219,4 +236,11 @@
     width: 100%;
     flex: 1;
     max-height: 280px;
+}
+
+.create-post-btn{
+    display: flex;
+    align-self: center;
+    margin: 16px;
+    width: fit-content;
 }
