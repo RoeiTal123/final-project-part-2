@@ -148,6 +148,23 @@
     height: 100%;
 }
 
+.post-header-right .right {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+}
+
+.right .remove-post-btn{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 16px;
+    width: 16px;
+    border: 0;
+    background-color: transparent;
+}
+
 .post-box .post-description {
     padding: 0 16px 16px 16px;
 }
@@ -203,7 +220,6 @@
 
 .post-creation-box .post-header {
     display: flex;
-    /* justify-content: space-between; */
     align-items: center;
     gap: 16px;
     padding: 16px;

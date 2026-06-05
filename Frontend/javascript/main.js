@@ -162,7 +162,10 @@ function renderPosts(list = postsForRender) { // function that renders updates p
                                <div class="post-user-name">${poster.fullname}</div>
                                <div class="post-title">${post.title}</div>
                            </div>
+                           <div class="right">
                            <div class="post-date">${getTimeAgo(post.createdAt)}</div>
+                           <button class="remove-post-btn" onclick="deletePost('${post._id}')">X</button>
+                           </div>
                            </div>
                        </div>
                        <div class="post-description">${post.description}</div>
@@ -323,7 +326,29 @@ function createPost() {
     postDescription.value = ""
     posts.push(newPost)
     postsForRender = posts.filter(p => true)
-    renderPosts(postsForRender)
+    rendertMethod = "none"
+    updateMainContent()
+    alterPosts()
+}
+
+function deletePost(postId = ""){
+    if(postId === ""){
+        console.log("there is no post in ba sing se")
+        return
+    }
+    const post = posts.find(post => post._id === postId)
+    // console.log("postId: "+postId)
+    // console.log("posts: "+posts)
+    // console.log("post: "+post)
+    if(post._userid !== userId){
+        console.log("this aint your post boy!")
+        return
+    } 
+    posts = posts.filter(post => post._id !== postId)
+    postsForRender = posts.filter(p => true)
+    rendertMethod = "none"
+    updateMainContent()
+    console.log(`post with _id:[${postId}] removed`)
 }
 
 function generateId(length = 16) {
