@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", Main)
 
 let rendertMethod = "none"
 
-let posts = [
+let defaultPosts = [
     {
         _id: '1',
         _userid: '1',
@@ -114,6 +114,8 @@ let posts = [
     }
 ]
 
+posts = getArrayFromStorage('posts', defaultPosts)
+
 const users = [{
     _id: "1", username: "moshe", password: "moshedat", fullname: "moshe perets", mail: "moshe@dat.com", createdAt: 1778841205000,
     birthday: 1021669200000, profilePicURL: "../design/images/profile pictures/man_1.avif", userType: "feeder", feedingStations: [{ _id: 1, status: "owner" }], posts: ["1", "4", "7", "10"]
@@ -133,7 +135,7 @@ const users = [{
 
 let postsForRender = posts.filter(p => true)
 
-let userId = "4"; // in this case
+let userId = "4" // in this case
 
 function Main() {
     //renderPosts()
@@ -219,6 +221,7 @@ function getTimeAgo(timestamp) {
 }
 
 function alterPosts(value = rendertMethod) { // function to sort / filter posts
+    const storedPosts = [...posts]
     let alteredPosts // variable for posts to alter
     if (value === rendertMethod) return
 
@@ -226,80 +229,79 @@ function alterPosts(value = rendertMethod) { // function to sort / filter posts
 
         case "new":
             sortMethod = "new"
-            alteredPosts = [...posts].sort((a, b) => b.createdAt - a.createdAt) // + = true so it sorts if gap in time is smaller because today < yestarday
+            alteredPosts = [...storedPosts].sort((a, b) => b.createdAt - a.createdAt) // + = true so it sorts if gap in time is smaller because today < yestarday
             break                                                               // the bigger the timestamp, the more time had passed
 
         case "old":
             sortMethod = "old"
-            alteredPosts = [...posts].sort((a, b) => a.createdAt - b.createdAt) // - = false, does the opposite of the other sort
+            alteredPosts = [...storedPosts].sort((a, b) => a.createdAt - b.createdAt) // - = false, does the opposite of the other sort
             break
 
         case "day":
             sortMethod = "day"
-            alteredPosts = [...posts].filter(post =>                            // filters based on value, timestamp is in miliseconds so 1=1 milisecond, 1000 = 1 second, 60000 = minute
+            alteredPosts = [...storedPosts].filter(post =>                            // filters based on value, timestamp is in miliseconds so 1=1 milisecond, 1000 = 1 second, 60000 = minute
                 post.createdAt >= Date.now() - (1000 * 60 * 60 * 24))           // 3,600,000 = hour, that x 24 = day
             break
 
         case "week":
             sortMethod = "week"
-            alteredPosts = [...posts].filter(post =>                            // filters the same way but now day x 7 = week
+            alteredPosts = [...storedPosts].filter(post =>                            // filters the same way but now day x 7 = week
                 post.createdAt >= Date.now() - (1000 * 60 * 60 * 24 * 7))
             break
 
         case "month":
             sortMethod = "month"
-            alteredPosts = [...posts].filter(post =>                            // filters the same way but now day x 30 = month
+            alteredPosts = [...storedPosts].filter(post =>                            // filters the same way but now day x 30 = month
                 post.createdAt >= Date.now() - (1000 * 60 * 60 * 24 * 30))
             break
     }
     handleSortChange(value)
-    postsForRender = [...alteredPosts];                                         // updates the list we use, not database itself
+    postsForRender = [...alteredPosts]                                        // updates the list we use, not database itself
     renderPosts(alteredPosts)
     console.log(`sorted / filtered by ${value}`)
 }
 
 function isLiked(postId, userId = userId) { // checks if post with id = postId is liked by user with id = Userid
-    const post = postsForRender.find(p => p._id === postId);
-    return post.likedByUsers.includes(userId); // checks if array has variable, so it checks if likedByUser[] has userId
+    const post = postsForRender.find(p => p._id === postId)
+    return post.likedByUsers.includes(userId) // checks if array has variable, so it checks if likedByUser[] has userId
 }
 
 function likePost(postId) { // likes or dislikes post if it's already liked or not
     if (postId === null || postId === undefined) { // if id doesn't exist it can't work
-        return false;
+        return false
     }
-    const post = postsForRender.find(p => p._id === postId); // checks if an object in the array has ._id === postId and returns the first occurance
+    const post = postsForRender.find(p => p._id === postId) // checks if an object in the array has ._id === postId and returns the first occurance
     // so it searchs for that post
     const liked = isLiked(postId, userId) // checks if it's liked
     if (liked) { // it's liked? remove the like
-        post.likedByUsers = post.likedByUsers.filter(id => id !== userId); // removes the like by filtering that user' id out
+        post.likedByUsers = post.likedByUsers.filter(id => id !== userId) // removes the like by filtering that user' id out
     } else {
-        post.likedByUsers.push(userId); // adds the id in the end because the order doesn't matter
+        post.likedByUsers.push(userId) // adds the id in the end because the order doesn't matter
     }
-    renderPosts(postsForRender); // renders the posts
+    renderPosts(postsForRender) // renders the posts
 }
 
 function handleSortChange(selectedSort) {
-    const url = new URL(window.location.href);
+    const url = new URL(window.location.href)
 
-    url.searchParams.set('sort', selectedSort);
+    url.searchParams.set('sort', selectedSort)
 
-    window.history.pushState({}, '', url);
-
+    window.history.pushState({}, '', url)
 }
 
 function updateMainContent() {
-    const urlParams = new URLSearchParams(window.location.search);
+    const urlParams = new URLSearchParams(window.location.search)
 
-    const currentSort = urlParams.get('sort') || "new";
+    const currentSort = urlParams.get('sort') || "new"
 
     if (currentSort) {
-        const sortRadio = document.getElementById(currentSort);
+        const sortRadio = document.getElementById(currentSort)
         if (sortRadio) {
-            sortRadio.checked = true;
+            sortRadio.checked = true
         }
     }
 
-    alterPosts(currentSort);
+    alterPosts(currentSort)
 
     const user = users.find(user => user._id === userId)
     const postCreator = document.getElementById("input-post-profile-picture")
@@ -319,12 +321,13 @@ function createPost() {
         console.log("you forgot description you stupid")
         return
     }
-    console.log(`postTitle: ${actualPostTitle} | postDescription: ${actualPostDescription}`)
+    //console.log(`postTitle: ${actualPostTitle} | postDescription: ${actualPostDescription}`)
     const newPost = {_id: generateId(), _userid:userId, title:actualPostTitle, description:actualPostDescription, 
                      mediaType:"none", mediaUrl:"", likedByUsers:[], createdAt: Date.now()}
     postTitle.value = ""
     postDescription.value = ""
     posts.push(newPost)
+    saveArrayToStorage('posts', posts);
     postsForRender = posts.filter(p => true)
     rendertMethod = "none"
     updateMainContent()
@@ -338,13 +341,15 @@ function deletePost(postId = ""){
     }
     const post = posts.find(post => post._id === postId)
     // console.log("postId: "+postId)
-    // console.log("posts: "+posts)
+    // console.log("posts: ")
+    // console.log(posts)
     // console.log("post: "+post)
     if(post._userid !== userId){
         console.log("this aint your post boy!")
         return
     } 
     posts = posts.filter(post => post._id !== postId)
+    saveArrayToStorage('posts', posts)
     postsForRender = posts.filter(p => true)
     rendertMethod = "none"
     updateMainContent()
@@ -361,4 +366,29 @@ function generateId(length = 16) {
     }
 
     return result
+}
+
+let usersKey = "users"
+let postsKey = "posts"
+
+function saveArrayToStorage(key, array) {
+  localStorage.setItem(key, JSON.stringify(array))
+}
+
+function getArrayFromStorage(key, defaultArray = []) {
+  const storedData = localStorage.getItem(key)
+  
+  // If nothing is in localStorage, return the default array
+  if (!storedData) {
+    return defaultArray
+  }
+  
+  const parsedArray = JSON.parse(storedData)
+  
+  // If the stored array is completely empty [], also fallback to the default array
+  if (parsedArray.length === 0) {
+    return defaultArray
+  }
+  
+  return parsedArray
 }

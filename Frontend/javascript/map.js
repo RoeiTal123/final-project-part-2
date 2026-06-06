@@ -104,7 +104,7 @@ function toggleModal(originalX, originalY) {
 }
 
 function Main() {
-    centerMap();
+    centerMap()
 }
 
 function setLocation(originalX, originalY) {
@@ -138,7 +138,6 @@ function renderFeeders(locationId = "1") { // function that renders feeders of t
         feedersContainer.innerHTML = feederids.map(feederId => {
 
             const feeder = users.find(user => user._id === feederId)
-            console.log(feeder)
             if (!feeder) return ''
 
             return `
