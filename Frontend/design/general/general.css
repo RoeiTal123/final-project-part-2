@@ -1,3 +1,5 @@
+@import "../subelements/toast.css";
+
 @font-face {
     font-family: "flower";
     src: url("../general/IndieFlower-Regular.ttf") format("truetype");

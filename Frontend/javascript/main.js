@@ -1,6 +1,31 @@
-document.addEventListener("DOMContentLoaded", Main)
+import {saveArrayToStorage, getArrayFromStorage} from '../javascript/helper.js'
+import { showToast,hideToast } from './toast.js'
 
-let rendertMethod = "none"
+document.addEventListener("DOMContentLoaded", Main)
+const radios = document.querySelectorAll('input[name="sort"]');
+
+document.querySelector(".create-post-btn")
+  .addEventListener("click", createPost);
+
+document.addEventListener("click", (e) => {
+  const removeBtn = e.target.closest(".remove-post-btn");
+  if (removeBtn) {
+    deletePost(removeBtn.dataset.id);
+  }
+
+  const likeBtn = e.target.closest(".like-btn");
+  if (likeBtn) {
+    likePost(likeBtn.dataset.id);
+  }
+});
+
+radios.forEach(radio => {
+  radio.addEventListener("change", (e) => {
+    alterPosts(e.target.value);
+  });
+});
+
+let sortMethod = "none"
 
 let defaultPosts = [
     {
@@ -114,7 +139,7 @@ let defaultPosts = [
     }
 ]
 
-posts = getArrayFromStorage('posts', defaultPosts)
+let posts = getArrayFromStorage('posts', defaultPosts)
 
 const users = [{
     _id: "1", username: "moshe", password: "moshedat", fullname: "moshe perets", mail: "moshe@dat.com", createdAt: 1778841205000,
@@ -166,7 +191,7 @@ function renderPosts(list = postsForRender) { // function that renders updates p
                            </div>
                            <div class="right">
                            <div class="post-date">${getTimeAgo(post.createdAt)}</div>
-                           <button class="remove-post-btn" onclick="deletePost('${post._id}')">X</button>
+                           <button class="remove-post-btn" data-id="${post._id}">X</button>
                            </div>
                            </div>
                        </div>
@@ -179,7 +204,7 @@ function renderPosts(list = postsForRender) { // function that renders updates p
                     }
                 </div>`: ""}
                 <div class="post-footer">
-                  <div class="like-btn" onclick="likePost('${post._id}')">
+                  <div class="like-btn" data-id="${post._id}">
                     <svg viewBox="0 -2 24 24" height="24px" id="meteor-icon-kit__solid-heart" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="var(--black)" stroke-width="${liked ? '0' : '0.24'}">
                     <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
                     <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier">
@@ -220,10 +245,10 @@ function getTimeAgo(timestamp) {
     return `${days}d ago`
 }
 
-function alterPosts(value = rendertMethod) { // function to sort / filter posts
+function alterPosts(value = sortMethod) { // function to sort / filter posts
     const storedPosts = [...posts]
     let alteredPosts // variable for posts to alter
-    if (value === rendertMethod) return
+    if (value === sortMethod) return
 
     switch (value) { // checks the value of the chosen input radio button
 
@@ -258,6 +283,7 @@ function alterPosts(value = rendertMethod) { // function to sort / filter posts
     handleSortChange(value)
     postsForRender = [...alteredPosts]                                        // updates the list we use, not database itself
     renderPosts(alteredPosts)
+    showToast(`sorted / filtered by ${value}`,"main")
     console.log(`sorted / filtered by ${value}`)
 }
 
@@ -314,10 +340,12 @@ function createPost() {
     const actualPostTitle = postTitle.value
     const actualPostDescription = postDescription.value
     if (actualPostTitle === "") {
+        showToast(`you forgot title you stupid`,"main");
         console.log("you forgot title you stupid")
         return
     }
     if (actualPostDescription === "") {
+        showToast(`you forgot description you stupid`,"main");
         console.log("you forgot description you stupid")
         return
     }
@@ -329,7 +357,8 @@ function createPost() {
     posts.push(newPost)
     saveArrayToStorage('posts', posts);
     postsForRender = posts.filter(p => true)
-    rendertMethod = "none"
+    sortMethod = "none"
+    showToast(`created new post with id : [${newPost._id}]`,"main");
     updateMainContent()
     alterPosts()
 }
@@ -351,8 +380,9 @@ function deletePost(postId = ""){
     posts = posts.filter(post => post._id !== postId)
     saveArrayToStorage('posts', posts)
     postsForRender = posts.filter(p => true)
-    rendertMethod = "none"
+    sortMethod = "none"
     updateMainContent()
+    showToast(`deleted post with id : [${postId}]`,"main");
     console.log(`post with _id:[${postId}] removed`)
 }
 
@@ -371,24 +401,3 @@ function generateId(length = 16) {
 let usersKey = "users"
 let postsKey = "posts"
 
-function saveArrayToStorage(key, array) {
-  localStorage.setItem(key, JSON.stringify(array))
-}
-
-function getArrayFromStorage(key, defaultArray = []) {
-  const storedData = localStorage.getItem(key)
-  
-  // If nothing is in localStorage, return the default array
-  if (!storedData) {
-    return defaultArray
-  }
-  
-  const parsedArray = JSON.parse(storedData)
-  
-  // If the stored array is completely empty [], also fallback to the default array
-  if (parsedArray.length === 0) {
-    return defaultArray
-  }
-  
-  return parsedArray
-}
